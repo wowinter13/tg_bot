@@ -1,1 +1,1 @@
-bot: bundle exec ruby telegram_bot_service.rb
+bot: bundle exec ruby bot.rb
