@@ -13,6 +13,7 @@ class TelegramBotService
   TELEGRAM_API_URL = 'https://api.telegram.org'
   YANDEX_SPEECHKIT_API_URL = 'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize'
   MAX_VOICE_MESSAGE_LENGTH = 30 # seconds
+  MAX_VOICE_ERROR_MESSAGE = "Please send a voice message that is less than #{MAX_VOICE_MESSAGE_LENGTH} seconds long."
 
   class << self
     def run
@@ -28,10 +29,7 @@ class TelegramBotService
 
     def process_message(bot, message)
       if message.voice.duration > MAX_VOICE_MESSAGE_LENGTH
-        bot.api.send_message(
-          chat_id: message.chat.id,
-          text: "Please send a voice message that is less than #{MAX_VOICE_MESSAGE_LENGTH} seconds long."
-        )
+        process_error_message(bot, message, MAX_VOICE_ERROR_MESSAGE)
       else
         process_voice_message(bot, message)
       end
@@ -57,9 +55,13 @@ class TelegramBotService
 
       response = send_for_transcoding(converted_file)
 
-      speech_to_text_result = JSON.parse(response.body)['result']
+      parsed_response = JSON.parse(response.body)
 
-      bot.api.send_message(chat_id: message.chat.id, text: speech_to_text_result.to_s)
+      if parsed_response['error_message']
+        process_error_message(bot, message, parsed_response['error_message'])
+      else
+        bot.api.send_message(chat_id: message.chat.id, text: parsed_response['result'].to_s)
+      end
 
       converted_file.close
     end
@@ -71,6 +73,13 @@ class TelegramBotService
       movie.transcode(converted_file.path)
 
       converted_file
+    end
+
+    def process_error_message(bot, message, error_text)
+      bot.api.send_message(
+        chat_id: message.chat.id,
+        text: "Please send a voice message that is less than 30 seconds long."
+      )
     end
 
     def send_for_transcoding(converted_file)
