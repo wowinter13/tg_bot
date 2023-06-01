@@ -52,7 +52,7 @@ RSpec.describe TelegramBotService do
 
     it 'processes the voice message and sends back the result' do
       expect(subject).to receive(:fetch_voice_file).with(bot, file_id).and_return(file)
-      expect(subject).to receive(:send_for_transcoding).with(instance_of(Tempfile)).and_return(yandex_response)
+      expect(subject).to receive(:send_for_transcoding).with(instance_of(File)).and_return(yandex_response)
       expect(api).to receive(:send_message).with(chat_id: 123, text: 'speech_to_text_result')
 
       thread = Thread.new do
