@@ -16,7 +16,6 @@ class TelegramBotService
   # but for some reason yandex responds with an error if the voice message is longer than approx. 7 seconds
   # (even though the documentation says the limit is 30 seconds)
   MAX_VOICE_MESSAGE_LENGTH = 7 # seconds
-  MAX_VOICE_ERROR_MESSAGE = "Please send a voice message that is less than #{MAX_VOICE_MESSAGE_LENGTH} seconds long."
 
   class << self
     def run
